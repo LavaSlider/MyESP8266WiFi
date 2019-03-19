@@ -1,9 +1,12 @@
 /**
  *
  * @file ESP8266WiFiMultiWithStaticIP.h
+ * @date 03/18/2019
+ * @author LavaSlider
+ *
+ * Derived from @file ESP8266WiFiMulti.h
  * @date 16.05.2015
  * @author Markus Sattler
- * @author David Stockton
  *
  * Copyright (c) 2015 Markus Sattler. All rights reserved.
  * This file is part of the esp8266 core for Arduino environment.

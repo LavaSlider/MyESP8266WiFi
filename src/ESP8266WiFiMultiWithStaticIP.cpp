@@ -1,6 +1,10 @@
 /**
  *
  * @file ESP8266WiFiMultiWithStaticIP.cpp
+ * @date 03/18/2019
+ * @author LavaSlider
+ *
+ * Derived from @file ESP8266WiFiMulti.cpp
  * @date 16.05.2015
  * @author Markus Sattler
  *
@@ -47,7 +51,7 @@ bool ESP8266WiFiMultiWithStaticIP::existsAP(const char* ssid, const char *passph
 }
 
 wl_status_t ESP8266WiFiMultiWithStaticIP::run(void) {
-    DEBUG_WIFI_MULTI("[WIFI] Entering run() ----------------------------------------------\n");
+    DEBUG_WIFI_MULTI("[WIFI] Entering ESP8266WiFiMultiWithStaticIP::run()\n");
     bool showHidden = true;
 
     wl_status_t status = WiFi.status();
@@ -100,7 +104,7 @@ wl_status_t ESP8266WiFiMultiWithStaticIP::run(void) {
                 WiFi.getNetworkInfo(i, ssid_scan, sec_scan, rssi_scan, BSSID_scan, chan_scan, hidden_scan);
 
 		// Flag if we encounter any hidden networks
-		if( ssid_scan.length() <= 0 || !hidden_scan ) {
+		if( ssid_scan.length() <= 0 || hidden_scan ) {
 		    hiddenNetworksFound = true;
 		}
 
@@ -140,7 +144,11 @@ wl_status_t ESP8266WiFiMultiWithStaticIP::run(void) {
 //		}
 
                 if(known) {
-                    DEBUG_WIFI_MULTI(" ---> ");
+		    if(hidden_scan) {
+			DEBUG_WIFI_MULTI(" :::> ");
+		    } else {
+			DEBUG_WIFI_MULTI(" ---> ");
+		    }
                 } else {
                     DEBUG_WIFI_MULTI("      ");
                 }
@@ -191,7 +199,7 @@ wl_status_t ESP8266WiFiMultiWithStaticIP::run(void) {
 		    IPAddress gw = bestNetworkPtr->gateway;
 		    if(!gw.isSet()) {
 			// This is what Arduino library does and it is not really
-			// valid but its ok
+			// valid but its ok since the user can set what thay really want
 			// It should take into account the subnet mask
 		    	gw = bestNetworkPtr->ip;
 			gw[3] = 1;
@@ -211,11 +219,6 @@ wl_status_t ESP8266WiFiMultiWithStaticIP::run(void) {
 #endif
 		    WiFi.config(bestNetworkPtr->ip, gw, sn );
 		}
-		// BSSID parameter is "const uint8_t* bssid = NULL"
-		//  (it looks like a BSSID of 00:00:00:00:00:00 will not work
-		//   like the null pointer, will need to replace bestBSSID
-		//   with a pointer set to the start of the bestBSSID)
-		// channel parameter is "int32_t channel = 0"
                 WiFi.begin(bestNetworkPtr->ssid, bestNetworkPtr->passphrase, bestChannel, bestBSSIDptr);
                 status = WiFi.status();
 
@@ -311,7 +314,6 @@ wl_status_t ESP8266WiFiMultiWithStaticIP::run(void) {
 bool ESP8266WiFiMultiWithStaticIP::APlistAdd(const char* ssid, const char *passphrase, const char *ipString, const char *gatewayString, const char *subnetString) {
 
     WifiAPEntryWithIP newAP;
-    //IPAddress ip;
 
     if(!ssid || *ssid == 0x00 || strlen(ssid) > 32) {
         // fail SSID too long or missing!
